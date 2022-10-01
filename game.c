@@ -35,6 +35,31 @@ char Canvas[ROWS][COLS + 1];
 int X, Y, velX, velY, pX, pY, Sz, Score, Lives;
 
 
+// Fundtion prototypes
+void init_window();
+void flush_canvas();
+void pause();
+void draw_border();
+void create_canvas();
+void move_cursor(int x, int y);
+void update_life(int new_life);
+void update_score(int new_score);
+void draw_ball(int x, int y, int col);
+int in_bounds_x(int x);
+int in_bounds_y(int y);
+int in_bounds(int x, int y);
+int will_collide_x();
+int will_collide_y();
+int will_collide();
+void move_ball();
+void init_game();
+void hide_cursor();
+void hidecursor();
+void draw_paddle(int x, int y, int col);
+void move_paddle(int dist);
+char input();
+
+
 void init_window() {
     system("chcp 437 > nul");   // To change codepage to 437
     HWND console = GetConsoleWindow();
