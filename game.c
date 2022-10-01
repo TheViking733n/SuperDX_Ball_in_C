@@ -199,13 +199,20 @@ void move_ball() {
     }
     if (ch = will_collide_y()) {
         if (ch == SPIKES) {
-            init_game();
-            Sleep(300);
+            // Restart Game
+            X = COLS / 2;
+            Y = ROWS / 2;
+            velX = 2;
+            velY = 1;
+            pX = (COLS - Sz) / 2;
+            pY = ROWS - 5;
             create_canvas();
-            update_life(Lives );
+            update_life(Lives - 1);
             draw_ball(X, Y, 1);
             draw_paddle(pX, pY, 1);
             flush_canvas();
+            Sleep(300);
+            return;
         } else {
             velY = -velY;
             f = 0;
@@ -241,8 +248,7 @@ void hide_cursor() {
     printf("\e[?25l");  // Hide cursor
 }
 
-void hidecursor()
-{
+void hidecursor() {
    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
    CONSOLE_CURSOR_INFO info;
    info.dwSize = 100;
@@ -269,8 +275,7 @@ void move_paddle(int dist) {
     draw_paddle(pX, pY, 1);
 }
 
-char input()
-{
+char input() {
     if (kbhit()) {
         switch (getch()) {
         case KB_LEFT:
@@ -300,15 +305,18 @@ int main() {
     draw_paddle(pX, pY, 1);
     flush_canvas();
 
-    move_cursor(12, 8);
-    printf("Welcome  to   the     game             of The Viking");
-    sprintf(&Canvas[8][12], "Welcome  to   the     game             of The Viking");
+    // move_cursor(12, 8);
+    // printf("Welcome  to   the     game             of The Viking");
+    // sprintf(&Canvas[8][12], "Welcome  to   the     game         of The Viking");
     int t = 1000000;
+    int delay = 70;
     while (t--) {
         // hide_cursor();
         hidecursor();
         move_ball();
-        Sleep(100);
+ 
+        Sleep(delay);
+ 
         char inp = input();
         if (inp == 'a') {
             move_paddle(-3);
