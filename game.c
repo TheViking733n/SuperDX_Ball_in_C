@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <Windows.h>
 #include <conio.h>
 
@@ -17,6 +18,7 @@
 #define H            205     // ═
 #define V            186     // ║
 #define BLOCK        254     // ■
+#define DIALOG       219     // ▓
 #define BALL         79      // O
 #define PADDLE       223     // ▀
 #define WALL         220     // ▄
@@ -45,7 +47,9 @@ int X,
     Score,
     Lives,
     delay,
+    gameStartTime,          // Stores the time when game started
     Tiles[tileRowCnt][8];   // To store the health of each tile
+
 
 
 
@@ -72,6 +76,7 @@ int will_collide_x();
 int will_collide_y();
 int will_collide();
 void move_ball();
+void init_ball_and_paddle();
 void init_game();
 void hide_cursor();
 void hidecursor();
@@ -127,7 +132,6 @@ void create_canvas() {
     for (int i = 0; i < Lives; i++) {
         Canvas[0][8 + i*2] = 3;
         Canvas[0][9 + i*2] = SPACE;
-
     }
     sprintf(&Canvas[0][COLS - 14], "Score: %06d", Score);
     draw_border();
@@ -153,6 +157,10 @@ void update_life(int new_life) {
 void update_score(int new_score) {
     Score = new_score;
     sprintf(&Canvas[0][COLS - 14], "Score: %06d", Score);
+    move_cursor(COLS - 14, 0);
+    for (int i = 0; i < 13; i++) {
+        printf("%c", Canvas[0][COLS - 14 + i]);
+    }
 }
 
 void draw_ball(int x, int y, int col) {
@@ -211,7 +219,7 @@ void draw_tiles() {
 void tile_hit(int x, int y) {
     // move_cursor(x, y);
     update_score(Score + 10);
-    flush_canvas();
+    // flush_canvas();
     // printf("%d %d", x, y);
 
     int idy = y - 2;
@@ -236,7 +244,9 @@ void check_tile_hit(int x, int y) {
     if (ch == BLOCK || ch == TILE_SPACE) {
         // flush_canvas();
         tile_hit(x, y);
-        update_score(Score + 10);
+        int dt = time(NULL) - gameStartTime;
+        int bonus = 10 * max(0, (180 - dt) / 10);
+        update_score(Score + 100 + bonus);
     }
 }
 
@@ -295,13 +305,17 @@ void move_ball() {
     }
     if (ch = will_collide_y()) {
         if (ch == SPIKES) {
-            // Restart Game
-            X = COLS / 2;
-            Y = ROWS / 2;
-            velX = 2;
-            velY = 1;
-            pX = (COLS - Sz) / 2;
-            pY = ROWS - 5;
+            draw_ball(X, Y, 1);
+            Sleep(300);
+            draw_ball(X, Y, 0);
+            // Ball hit spikes
+            // X = COLS / 2;
+            // Y = ROWS / 2;
+            // velX = 2;
+            // velY = 1;
+            // pX = (COLS - Sz) / 2;
+            // pY = ROWS - 5;
+            init_ball_and_paddle();
             create_canvas();
             update_life(Lives - 1);
             draw_ball(X, Y, 1);
@@ -329,24 +343,36 @@ void move_ball() {
         velY = -velY;
     }
     
-
     X += velX;
     Y += velY;
     draw_ball(X, Y, 1);
 }
 
+void init_ball_and_paddle() {
+    int rand = time(NULL) % 7;
+    Y = ROWS - 6;
+    X = COLS * (rand + 1) / 8;
+    Sz = 14;
+    pX = X - Sz / 2;
+    pY = ROWS - 4;
+    velX = rand & 1 ? 2 : -2;
+    velY = -1;
+}
+
 
 void init_game() {
-    X = COLS / 2 - 12;
-    Y = ROWS / 2;
-    velX = 2;
-    velY = -1;
-    Sz = 14;
-    pX = (COLS - Sz) / 2;
-    pY = ROWS - 4;
+    // X = COLS / 2 - 12;
+    // Y = ROWS / 2;
+    // velX = 2;
+    // velY = -1;
+    // Sz = 14;
+    // pX = (COLS - Sz) / 2;
+    // pY = ROWS - 4;
+    init_ball_and_paddle();
+    gameStartTime = time(NULL);
     Score = 0;
     Lives = 14;
-    delay = 70;
+    delay = 100;
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < tileRowCnt; j++) {
             Tiles[j][i] = 1;
@@ -440,7 +466,55 @@ char input() {
     return NOKEY;
 }
 
-int main() {
+char quit_dialog() {
+    char choice = 0, c;
+    int x = COLS / 2 - 12, y = ROWS / 2 - 4;
+    // move_cursor(x, y + 0); printf("╔══════════════════════╗");
+    // move_cursor(x, y + 1); printf("║▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓║");
+    // move_cursor(x, y + 2); printf("║▓▓▓▓▓▓▓▓Quit?▓▓▓▓▓▓▓▓▓║");
+    // move_cursor(x, y + 3); printf("║▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓║");
+    // move_cursor(x, y + 4); printf("║▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓║");
+    // move_cursor(x, y + 5); printf("║▓▓▓▓Yes▓▓▓▓▓▓▓▓No▓▓▓▓▓║");
+    // move_cursor(x, y + 6); printf("║▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓║");
+    // move_cursor(x, y + 7); printf("╚══════════════════════╝");
+
+    for (int j = 0; j < 8; j++) {
+        move_cursor(x, y + j);
+        for (int i = 0; i < 24; i++) {
+            c = DIALOG;
+            if (i == 0 || i == 23) c = V;
+            if (j == 0 || j == 7) c = H;
+            if (i == 0 && j == 0) c = TL;
+            else if (i == 23 && j == 0) c = TR;
+            else if (i == 0 && j == 7) c = BL;
+            else if (i == 23 && j == 7) c = BR;
+            printf("%c", c);
+        }
+    }
+    move_cursor(x + 9, y + 2); printf("Quit?");
+    move_cursor(x + 5, y + 5); printf("Yes");
+    move_cursor(x + 16, y + 5); printf("No");
+
+
+    while (!choice) {
+        if (kbhit()) {
+            switch (getch()) {
+            case 'Y':
+            case 'y':
+                choice = 'y';
+                break;
+            case 'N':
+            case 'n':
+            case KB_ESC:
+                choice = 'n';
+                break;
+            }
+        }
+    }
+    return choice;
+}
+
+void game_start() {
     init_window();
     init_game();
     hide_cursor();
@@ -461,20 +535,23 @@ int main() {
         move_ball();
  
         // Sleep(delay);
-        int waited = 0;
+        int user_moved = 0;
  
         char inp = input();
         if (inp == 'a') {
             move_paddle_slowly(-4, delay);
-            waited = 1;
+            user_moved = 1;
         } else if (inp == 'd') {
             move_paddle_slowly(4, delay);
-            waited = 1;
+            user_moved = 1;
         } else if (inp == 'q') {
-            break;
+            if (quit_dialog() == 'y') {
+                break;
+            }
+            flush_canvas();
         }
 
-        if (!waited) {
+        if (!user_moved) {
             Sleep(delay);
         }
 
@@ -483,7 +560,9 @@ int main() {
             flush_canvas();
         }
     }
+}
 
-
+int main() {
+    game_start();
     return 0;
 }
