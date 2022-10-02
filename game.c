@@ -6,22 +6,25 @@
 
 
 
-#define ROWS    20
-#define COLS    80
-#define HEART   3       // ♥
-#define TL      201     // ╔
-#define TR      187     // ╗
-#define BL      200     // ╚
-#define BR      188     // ╝
-#define H       205     // ═
-#define V       186     // ║
-#define BLOCK   178     // █
-#define BALL    79      // O
-#define PADDLE  223     // ▀
-#define WALL    220     // ▄
-#define SPACE   32      // space
-#define SPIKES  30      // ▲
-#define NOKEY   255     // no key
+#define ROWS         20
+#define COLS         80
+#define tileRowCnt   5
+#define HEART        3       // ♥
+#define TL           201     // ╔
+#define TR           187     // ╗
+#define BL           200     // ╚
+#define BR           188     // ╝
+#define H            205     // ═
+#define V            186     // ║
+#define BLOCK        254     // ■
+#define BALL         79      // O
+#define PADDLE       223     // ▀
+#define WALL         220     // ▄
+#define SPIKES       24      // ↑
+#define SPIKES2      30      // ▲
+#define SPACE        32      // space
+#define TILE_SPACE   255     // space between tiles
+#define NOKEY        0       // no key pressed
 
 #define KB_UP 72
 #define KB_DOWN 80
@@ -32,10 +35,22 @@
 
 char Canvas[ROWS][COLS + 1];
 
-int X, Y, velX, velY, pX, pY, Sz, Score, Lives;
+int X,
+    Y,
+    velX,
+    velY,
+    pX,
+    pY,
+    Sz,
+    Score,
+    Lives,
+    delay,
+    Tiles[tileRowCnt][8];   // To store the health of each tile
 
 
-// Fundtion prototypes
+
+
+// Function prototypes
 void init_window();
 void flush_canvas();
 void pause();
@@ -45,6 +60,11 @@ void move_cursor(int x, int y);
 void update_life(int new_life);
 void update_score(int new_score);
 void draw_ball(int x, int y, int col);
+void draw_tile(int x, int y, int col);
+void draw_tile_from_id(int idx, int idy, int col);
+void draw_tiles();
+void tile_hit(int x, int y);
+void check_tile_hit(int x, int y);
 int in_bounds_x(int x);
 int in_bounds_y(int y);
 int in_bounds(int x, int y);
@@ -149,6 +169,77 @@ void draw_ball(int x, int y, int col) {
     }
 }
 
+void draw_tile(int x, int y, int col) {
+    // Tile is a game element made up of blocks - {Space, 8 blocks, Space}
+    // If col = 0, hides the tile at x, y position
+    // else draws the tile at x, y
+    if (x < 0) return;   // To handle the case of shifted tiles
+    if (col == 0) {
+        Canvas[y][x] = (x == 0) ? V : SPACE;             // Left wall
+        for (int i = 1; i <= 8; i++) {
+            Canvas[y][x + i] = SPACE;
+        }
+        Canvas[y][x + 9] = (x + 9 == 79) ? V : SPACE;    // Right wall
+        move_cursor(x, y);
+        printf("%c%c%c%c%c%c%c%c%c%c", Canvas[y][x], SPACE, SPACE, SPACE, SPACE, SPACE, SPACE, SPACE, SPACE, Canvas[y][x + 9]);
+    } else {
+        // int b = 1-(y&1) ? BLOCK : 219;
+        char b = BLOCK;
+        Canvas[y][x] = x == 0 ? V : TILE_SPACE;             // Left wall
+        for (int i = 1; i <= 8; i++) {
+            Canvas[y][x + i] = b;
+        }
+        Canvas[y][x + 9] = (x + 9 == 79) ? V : TILE_SPACE;    // Right wall
+        move_cursor(x, y);
+        printf("%c%c%c%c%c%c%c%c%c%c", Canvas[y][x], b, b, b, b, b, b, b, b, Canvas[y][x + 9]);
+    }
+}
+
+void draw_tile_from_id(int idx, int idy, int col) {
+    int x_offset = idy & 1 ? -5 : 0;
+    draw_tile(10 * idx + x_offset, idy + 2, col);
+}
+
+void draw_tiles() {
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < tileRowCnt; j++) {
+            draw_tile_from_id(i, j, Tiles[j][i]);
+        }
+    }
+}
+
+void tile_hit(int x, int y) {
+    // move_cursor(x, y);
+    update_score(Score + 10);
+    flush_canvas();
+    // printf("%d %d", x, y);
+
+    int idy = y - 2;
+    int x_offset = idy & 1 ? -5 : 0;
+    int idx = (x - x_offset) / 10;
+    if (idx < 0 || idx >= 8) return;
+    if (idy < 0 || idy >= tileRowCnt) return;
+    if (Tiles[idy][idx] == 0) return;
+    Tiles[idy][idx] = 0;
+    draw_tile_from_id(idx, idy, Tiles[idy][idx]);
+    update_score(Score + 10);
+}
+
+void check_tile_hit(int x, int y) {
+    if (!in_bounds(x, y)) return;
+    int ch = 256 + Canvas[y][x];   // Need to add 256 to get proper char to int conversion (2's complement)
+    // system("cls");
+    // move_cursor(0,0);
+    // printf("%d %d %d", x, y, 256+Canvas[y][x]);
+    // Sleep(2000);
+    // flush_canvas();
+    if (ch == BLOCK || ch == TILE_SPACE) {
+        // flush_canvas();
+        tile_hit(x, y);
+        update_score(Score + 10);
+    }
+}
+
 
 int in_bounds_x(int x) {
     return x >= 0 && x < COLS;
@@ -192,8 +283,13 @@ int will_collide() {
 
 void move_ball() {
     draw_ball(X, Y, 0);
-    int f = 1, ch;
+    int f = 1, ch = 0;
     if (ch = will_collide_x()) {
+        // if (ch == TILE_SPACE || ch == BLOCK) {
+        //     tile_hit(X + velX, Y);
+        // }
+        check_tile_hit(X + velX, Y);
+        check_tile_hit(X + velX/2, Y);
         velX = -velX;
         f = 0;
     }
@@ -210,15 +306,25 @@ void move_ball() {
             update_life(Lives - 1);
             draw_ball(X, Y, 1);
             draw_paddle(pX, pY, 1);
+            draw_tiles();
             flush_canvas();
             Sleep(300);
             return;
         } else {
+            // if (ch == TILE_SPACE || ch == BLOCK) {
+            //     tile_hit(X, Y + velY);
+            // }
+            check_tile_hit(X, Y + velY);
             velY = -velY;
             f = 0;
         }
     }
-    if (f && will_collide()) {
+    if (f && (ch = will_collide())) {
+        // if (ch == TILE_SPACE || ch == BLOCK) {
+        //     tile_hit(X + velX, Y + velY);
+        // }
+        check_tile_hit(X + velX, Y + velY);
+        check_tile_hit(X + velX/2, Y + velY);
         velX = -velX;
         velY = -velY;
     }
@@ -231,15 +337,21 @@ void move_ball() {
 
 
 void init_game() {
-    X = COLS / 2;
+    X = COLS / 2 - 12;
     Y = ROWS / 2;
     velX = 2;
-    velY = 1;
-    Sz = 12;
+    velY = -1;
+    Sz = 14;
     pX = (COLS - Sz) / 2;
-    pY = ROWS - 5;
+    pY = ROWS - 4;
     Score = 0;
     Lives = 14;
+    delay = 70;
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < tileRowCnt; j++) {
+            Tiles[j][i] = 1;
+        }
+    }
 }
 
 
@@ -268,12 +380,44 @@ void draw_paddle(int x, int y, int col) {
 }
 
 void move_paddle(int dist) {
-    draw_paddle(pX, pY, 0);
-    pX += dist;
-    if (pX <= 0) pX = 1;
-    if (pX + Sz >= COLS) pX = COLS - Sz - 1;
-    draw_paddle(pX, pY, 1);
+    // Moves the paddle left or right by dist units
+    int pX_new = pX + dist;
+    if (pX_new <= 0) pX_new = 1;
+    if (pX_new + Sz >= COLS) pX_new = COLS - Sz - 1;
+    char ch = SPACE;
+    for (int i = min(pX, pX_new); i < max(pX, pX_new) + Sz && in_bounds(i, pY); i++) {
+        if (i >= pX_new && i < pX_new + Sz) {
+            ch = PADDLE;
+        } else {
+            ch = SPACE;
+        }
+        if (Canvas[pY][i] == ch) {
+            continue;
+        }
+        Canvas[pY][i] = ch;
+        move_cursor(i, pY);
+        printf("%c", ch);
+    }
+    pX = pX_new;
 }
+
+void move_paddle_slowly(int dist, int duration) {
+    int sign = dist > 0 ? 1 : -1;
+    dist = abs(dist);
+    for (int i = 0; i < dist; i++) {
+        move_paddle(sign);
+        Sleep(duration / dist);
+    }
+}
+
+
+// void move_paddle_old_version(int dist) {
+//     draw_paddle(pX, pY, 0);
+//     pX += dist;
+//     if (pX <= 0) pX = 1;
+//     if (pX + Sz >= COLS) pX = COLS - Sz - 1;
+//     draw_paddle(pX, pY, 1);
+// }
 
 char input() {
     if (kbhit()) {
@@ -303,28 +447,37 @@ int main() {
     create_canvas();
     draw_ball(X, Y, 1);
     draw_paddle(pX, pY, 1);
+    draw_tiles();
+
     flush_canvas();
 
     // move_cursor(12, 8);
     // printf("Welcome  to   the     game             of The Viking");
     // sprintf(&Canvas[8][12], "Welcome  to   the     game         of The Viking");
     int t = 1000000;
-    int delay = 70;
     while (t--) {
         // hide_cursor();
         hidecursor();
         move_ball();
  
-        Sleep(delay);
+        // Sleep(delay);
+        int waited = 0;
  
         char inp = input();
         if (inp == 'a') {
-            move_paddle(-3);
+            move_paddle_slowly(-4, delay);
+            waited = 1;
         } else if (inp == 'd') {
-            move_paddle(3);
+            move_paddle_slowly(4, delay);
+            waited = 1;
         } else if (inp == 'q') {
             break;
         }
+
+        if (!waited) {
+            Sleep(delay);
+        }
+
         if (t%100==0) {
             draw_border();
             flush_canvas();
