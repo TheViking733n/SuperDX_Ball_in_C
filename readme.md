@@ -1,4 +1,5 @@
 # Super DX Ball
+![screenshot_1](https://github.com/TheViking733n/SuperDX_Ball_in_C/assets/69471106/66c181f0-a994-4c4d-adc5-cdd1b6b6ede1)
 
 Super DX Ball is a Simple and Interactive paddle game written in pure C for the Windows platform. No Graphics, only ASCII characters😎. The objective of the game is to hit all the bars using a ball without missing. If the player fails to hit the ball with the paddle more than 3 times, the game is lost.
 
@@ -10,8 +11,8 @@ Super DX Ball is a Simple and Interactive paddle game written in pure C for the 
 - High score tracking [Comming Soon!]
 
 ## Screenshots
-
-![Gameplay](/screenshots/gameplay.png)
+![screenshot_2](https://github.com/TheViking733n/SuperDX_Ball_in_C/assets/69471106/bb902b0f-6528-4775-a0b4-c67419ee1a8c)
+![screenshot_3](https://github.com/TheViking733n/SuperDX_Ball_in_C/assets/69471106/24fcc95b-c03a-497d-98f3-4d8061cb3db8)
 
 
 ## Getting Started
@@ -26,7 +27,7 @@ Super DX Ball is a Simple and Interactive paddle game written in pure C for the 
 
    ```shell
    git clone https://github.com/TheViking733n/SuperDX_Ball_in_C.git
-    cd SuperDX_Ball_in_C
+   cd SuperDX_Ball_in_C
     ```
 2. Compile and run the game:
 
