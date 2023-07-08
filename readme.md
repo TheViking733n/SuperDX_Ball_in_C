@@ -8,7 +8,7 @@ Super DX Ball is a Simple and Interactive paddle game written in pure C for the 
 - Classic paddle game with ASCII graphics
 - Simple and intuitive controls
 - Windows platform support
-- High score tracking [Comming Soon!]
+- High score tracking [Coming Soon!]
 
 ## Screenshots
 ![screenshot_2](https://github.com/TheViking733n/SuperDX_Ball_in_C/assets/69471106/bb902b0f-6528-4775-a0b4-c67419ee1a8c)
