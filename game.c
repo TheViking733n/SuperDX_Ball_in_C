@@ -19,7 +19,7 @@
 #define V            186     // ║
 #define BLOCK        254     // ■
 #define DIALOG       219     // ▓
-#define BALL         79      // O
+#define BALL         15      // o
 #define PADDLE       223     // ▀
 #define WALL         220     // ▄
 #define SPIKES       24      // ↑
@@ -84,6 +84,9 @@ void draw_paddle(int x, int y, int col);
 void move_paddle(int dist);
 char input();
 
+// int max(int x, int y) {
+//     return x > y ? x : y;
+// }
 
 void init_window() {
     system("chcp 437 > nul");   // To change codepage to 437
@@ -371,8 +374,8 @@ void init_game() {
     init_ball_and_paddle();
     gameStartTime = time(NULL);
     Score = 0;
-    Lives = 14;
-    delay = 100;
+    Lives = 3;
+    delay = 50;
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < tileRowCnt; j++) {
             Tiles[j][i] = 1;
@@ -469,14 +472,6 @@ char input() {
 char quit_dialog() {
     char choice = 0, c;
     int x = COLS / 2 - 12, y = ROWS / 2 - 4;
-    // move_cursor(x, y + 0); printf("╔══════════════════════╗");
-    // move_cursor(x, y + 1); printf("║▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓║");
-    // move_cursor(x, y + 2); printf("║▓▓▓▓▓▓▓▓Quit?▓▓▓▓▓▓▓▓▓║");
-    // move_cursor(x, y + 3); printf("║▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓║");
-    // move_cursor(x, y + 4); printf("║▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓║");
-    // move_cursor(x, y + 5); printf("║▓▓▓▓Yes▓▓▓▓▓▓▓▓No▓▓▓▓▓║");
-    // move_cursor(x, y + 6); printf("║▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓║");
-    // move_cursor(x, y + 7); printf("╚══════════════════════╝");
 
     for (int j = 0; j < 8; j++) {
         move_cursor(x, y + j);
